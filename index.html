@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>60 Վայրկյան</title>
+<meta name="description" content="Մեկ րոպե տուր այս էջին և ոչինչ մի՛ արա։">
+<meta name="theme-color" content="#0A0F1F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A0F1F'/%3E%3Ccircle cx='32' cy='40' r='12' fill='%23F2D9A4'/%3E%3Crect y='40' width='64' height='24' fill='%2305060A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Armenian:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --earth:#05060A; --paper:#ECE6D8; --haze:#A3A8BA; --gold:#F2D9A4;
+    --horizon:68%;
+    --p:0; --still:0;
+    --sun:242,217,164; --hz:46,56,88; --top:10,15,31;
+    --serif:"Noto Serif Armenian","Mshtakan","Sylfaen","Arian AMU",Georgia,serif;
+    color-scheme:dark;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  /* The piece is a night scene by design; both schemes resolve to the same dark palette. */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --earth:#05060A; --paper:#ECE6D8; --haze:#A3A8BA; --gold:#F2D9A4; }
+  }
+  :root[data-theme="dark"]{ --earth:#05060A; --paper:#ECE6D8; --haze:#A3A8BA; --gold:#F2D9A4; }
+
+  *,*::before,*::after{box-sizing:inherit}
+  html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);background:var(--earth)}
+  body{
+    height:100%;margin:0;overflow:hidden;
+    background:var(--earth);color:var(--paper);
+    font-family:var(--serif);font-weight:300;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+    touch-action:none;overscroll-behavior:none;
+  }
+  body.running{cursor:none}
+
+  /* ---------- The scene: one minute as a sunset ---------- */
+  .scene{position:fixed;inset:0;overflow:hidden;z-index:0}
+  .sky{
+    position:absolute;left:0;right:0;top:0;height:var(--horizon);overflow:hidden;
+    background:linear-gradient(180deg,rgb(var(--top)) 0%,rgb(var(--top)) 22%,rgb(var(--hz)) 100%);
+  }
+  .glow{
+    position:absolute;left:-25%;right:-25%;bottom:-35%;height:85%;
+    transform-origin:50% 100%;opacity:.85;
+    background:radial-gradient(ellipse 50% 60% at 50% 100%,rgba(var(--sun),calc(.05 + .3 * (1 - var(--p)))) 0%,rgba(var(--sun),0) 100%);
+    transition:transform 4s cubic-bezier(.45,0,.55,1),opacity 4s cubic-bezier(.45,0,.55,1);
+  }
+  .sun{
+    position:absolute;left:50%;top:calc(81% + var(--p) * 48%);
+    width:min(22vmin,200px);aspect-ratio:1/1;transform:translate(-50%,-50%);
+    transition:opacity 2s ease;
+  }
+  .core,.halo{position:absolute;border-radius:50%;
+    transition:transform 4s cubic-bezier(.45,0,.55,1),opacity 4s cubic-bezier(.45,0,.55,1)}
+  .core{inset:0;filter:blur(2px);
+    background:radial-gradient(circle,rgba(var(--sun),.95) 0%,rgba(var(--sun),.72) 44%,rgba(var(--sun),0) 70%)}
+  .halo{inset:-130%;opacity:calc(.8 + var(--still) * .2);
+    background:radial-gradient(circle,rgba(var(--sun),.2) 0%,rgba(var(--sun),.06) 32%,rgba(var(--sun),0) 64%)}
+
+  /* Breathing: the light swells on the in-breath and settles on the out-breath */
+  body.inhale .halo{transform:scale(1.4);opacity:1}
+  body.inhale .core{transform:scale(1.1)}
+  body.inhale .glow{transform:scale(1.18);opacity:1}
+
+  .ground{
+    position:absolute;left:0;right:0;bottom:0;top:var(--horizon);
+    background:linear-gradient(180deg,rgba(var(--sun),calc(.12 * (1 - var(--p)))) 0%,rgba(var(--sun),0) 22%),var(--earth);
+  }
+  .ground::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(var(--sun),calc(.06 + .45 * (1 - var(--p)))) 50%,transparent);
+  }
+  .dark{position:absolute;inset:0;background:#020203;opacity:0;transition:opacity 3.2s ease}
+  body.ended .dark{opacity:1}
+  body.ended .sun{opacity:0}
+
+  /* Film grain: also breaks up banding in the dark gradients */
+  .grain{position:absolute;inset:-50%;background-image:var(--noise);background-size:180px 180px;
+    animation:grain .7s steps(1) infinite;pointer-events:none}
+  @keyframes grain{
+    0%{transform:translate(0,0)} 20%{transform:translate(-7%,4%)} 40%{transform:translate(5%,-6%)}
+    60%{transform:translate(-3%,8%)} 80%{transform:translate(8%,2%)} 100%{transform:translate(0,0)}
+  }
+
+  /* ---------- Words ---------- */
+  .stage{
+    position:fixed;left:0;right:0;top:0;height:calc(var(--horizon) * .76);z-index:2;
+    display:grid;place-items:center;
+    padding:env(safe-area-inset-top,0px) 1.5rem 0;pointer-events:none;
+  }
+  .msg{grid-area:1/1;text-shadow:0 0 1.2em rgba(5,6,10,.6),0 0 .3em rgba(5,6,10,.35);display:flex;flex-direction:column;align-items:center;text-align:center;max-width:min(36rem,100%)}
+  .line{margin:0;text-wrap:balance}
+  .title{font-size:clamp(2.4rem,1.3rem + 5.4vmin,4.8rem);font-weight:200;line-height:1.1;margin-bottom:.55em}
+  .main{font-size:clamp(1.3rem,.9rem + 2.1vmin,2.25rem);font-weight:300;line-height:1.45}
+  .ask{margin-top:.9em}
+  .sub{font-size:clamp(1rem,.88rem + .75vmin,1.24rem);font-weight:300;color:var(--haze);line-height:1.6;margin-top:1.05em;max-width:30ch}
+  .hint{color:var(--paper);opacity:.9}
+  .beat{font-variant-numeric:tabular-nums}
+
+  .w{
+    display:inline-block;opacity:0;filter:blur(10px);transform:translateY(.3em);
+    transition:opacity 1.5s ease,filter 1.7s ease,transform 2s cubic-bezier(.16,.84,.26,1);
+    transition-delay:calc(var(--d,0s) + var(--i) * 80ms);
+  }
+  .msg.in .w{opacity:1;filter:blur(0);transform:none}
+  .msg.out .w{opacity:0;filter:blur(8px);transform:translateY(-.2em);transition-duration:1.1s;transition-delay:0s}
+  .msg.out.fast .w{transition-duration:.55s}
+
+  .again{
+    margin-top:2.6rem;pointer-events:auto;cursor:pointer;
+    font:inherit;font-size:1.02rem;font-weight:300;color:var(--paper);
+    background:transparent;border:1px solid rgba(236,230,216,.28);border-radius:999px;padding:.8em 1.8em;
+    opacity:0;visibility:hidden;transform:translateY(6px);
+    transition:opacity 1.6s ease 7.6s,transform 1.8s cubic-bezier(.16,.84,.26,1) 7.6s,visibility 0s linear 7.6s,border-color .4s ease 0s;
+  }
+  .msg.in .again{opacity:1;visibility:visible;transform:none}
+  .msg.out .again{opacity:0;transition:opacity .5s ease}
+  .again:hover{border-color:rgba(236,230,216,.62)}
+  .again:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+
+  /* Reduced motion: no blur, no grain, no moving or scaling. The light still breathes, by brightness alone. */
+  @media (prefers-reduced-motion: reduce){
+    .w{filter:none;transform:none;transition:opacity 1.2s ease;transition-delay:calc(var(--d,0s) + var(--i) * 40ms)}
+    .msg.in .w,.msg.out .w{filter:none;transform:none}
+    .grain{display:none}
+    .core{filter:none}
+    .again{transform:none}
+    body.inhale .halo,body.inhale .core,body.inhale .glow{transform:none}
+  }
+</style>
+</head>
+<body>
+  <div class="scene" aria-hidden="true">
+    <div class="sky">
+      <div class="glow"></div>
+      <div class="sun"><div class="halo"></div><div class="core"></div></div>
+    </div>
+    <div class="ground"></div>
+    <div class="dark"></div>
+    <div class="grain"></div>
+  </div>
+
+  <main class="stage" id="stage" aria-live="polite"></main>
+
+<script>
+(() => {
+  const root = document.documentElement, body = document.body;
+  const stage = document.getElementById('stage');
+
+  const RUN_MS = 60000, STILL_MS = 3000, TITLE = '60 Վայրկյան';
+  const opened = performance.now();
+  const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
+  let reduce = motionQuery.matches;
+  motionQuery.addEventListener?.('change', e => { reduce = e.matches; });
+
+  /* ---------- Grain texture ---------- */
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 180;
+    const ctx = c.getContext('2d'); const img = ctx.createImageData(180, 180);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = Math.random() * 255 | 0;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 16;
+    }
+    ctx.putImageData(img, 0, 0);
+    root.style.setProperty('--noise', `url(${c.toDataURL()})`);
+  } catch (e) {}
+
+  /* ---------- Eleven lines, timed in seconds into the minute ---------- */
+  const SCRIPT = [
+    { t: 2.5,  d: 4.6, main: 'Այս պահին քեզնից ոչինչ չի պահանջվում։' },
+    { t: 8.5,  d: 4.6, main: 'Այս վայրկյանը նախկինում երբեք չի եղել։', sub: 'Եվ այլևս երբեք չի կրկնվի։' },
+    { t: 14.5, d: 4.6, main: 'Այստեղ գալուց ի վեր սիրտդ բաբախել է մոտ {n} անգամ։', sub: 'Առանց քեզ հարցնելու։' },
+    { t: 20.5, d: 4.6, main: 'Ինչ-որ տեղ մի երեխա առաջին անգամ շունչ է քաշում։', sub: 'Ինչ-որ տեղ մեկը՝ վերջին անգամ։' },
+    { t: 26.5, d: 4.0, main: 'Այլևս երբեք այնքան երիտասարդ չես լինի, որքան հիմա ես։' },
+    { t: 32,   d: 4.6, main: 'Կես րոպե։', sub: 'Նկատիր՝ որքան երկար է այն, երբ ոչնչի վրա չես ծախսում։' },
+    { t: 38,   d: 4.6, main: 'Անցյալը հիշողություն է, ապագան՝ երևակայություն։', sub: 'Դու միշտ ապրել ես միայն այս պահում։' },
+    { t: 44,   d: 3.6, main: 'Լսիր։', sub: 'Ի՞նչ ես լսում, որ առաջ չէիր նկատում։' },
+    { t: 49,   d: 2.8, main: 'Դանդաղ շունչ քաշիր։', breath: 'in' },
+    { t: 53,   d: 2.6, main: 'Եվ բաց թող։', breath: 'out' },
+    { t: 56.9, d: 2.3, main: 'Շուտով սա էլ կդառնա անցյալ։' }
+  ];
+
+  const REASONS = {
+    move:   'Դու շարժվեցիր։',
+    click:  'Դու սեղմեցիր մկնիկը։',
+    touch:  'Դու դիպար էկրանին։',
+    key:    'Դու սեղմեցիր ստեղներից մեկը։',
+    scroll: 'Դու ոլորեցիր էջը։',
+    away:   'Դու նայեցիր ուրիշ կողմ։',
+    left:   'Դու հեռացար այս էջից։'
+  };
+  const HINT_FIRST = 'Րոպեն կսկսվի, հենց որ անշարժանաս։';
+  const HINT_AGAIN = 'Րոպեն նորից կսկսվի, հենց որ անշարժանաս։';
+  const HARDER     = 'Ոչինչ չանելն ավելի դժվար է, քան թվում է։';
+
+  /* ~72 beats per minute, counted from the moment the page opened */
+  const beats = now => Math.round((now - opened) / 1000 * 1.2);
+
+  /* ---------- Colour of the light over the minute ---------- */
+  const SUN = [[0, [242, 217, 164]], [.55, [238, 160, 96]], [1, [168, 56, 40]]];
+  const HZ  = [[0, [46, 56, 88]],    [.55, [64, 42, 56]],   [1, [14, 15, 26]]];
+  const TOP = [[0, [10, 15, 31]],    [1, [5, 7, 14]]];
+  function ramp(stops, t) {
+    for (let i = 1; i < stops.length; i++) {
+      if (t <= stops[i][0]) {
+        const a = stops[i - 1], b = stops[i], k = (t - a[0]) / (b[0] - a[0]);
+        return a[1].map((v, j) => Math.round(v + (b[1][j] - v) * k)).join(',');
+      }
+    }
+    return stops[stops.length - 1][1].join(',');
+  }
+  let lastP = -1;
+  function apply(p) {
+    if (Math.abs(p - lastP) < 0.0004) return; lastP = p;
+    root.style.setProperty('--p', p.toFixed(4));
+    root.style.setProperty('--sun', ramp(SUN, p));
+    root.style.setProperty('--hz', ramp(HZ, p));
+    root.style.setProperty('--top', ramp(TOP, p));
+  }
+
+  /* ---------- Text, revealed one word at a time ---------- */
+  let beatEls = [];
+  function line(text, cls, delay) {
+    const p = document.createElement('p');
+    p.className = 'line ' + cls; p.style.setProperty('--d', (delay || 0) + 's');
+    const words = text.split(' ');
+    words.forEach((word, i) => {
+      const s = document.createElement('span'); s.className = 'w';
+      s.style.setProperty('--i', i);
+      if (word === '{n}') { s.classList.add('beat'); s.textContent = beats(performance.now()); beatEls.push(s); }
+      else s.textContent = word;
+      p.appendChild(s);
+      if (i < words.length - 1) p.appendChild(document.createTextNode(' '));
+    });
+    return p;
+  }
+  function block(lines, extra) {
+    const d = document.createElement('div'); d.className = 'msg';
+    lines.forEach(l => d.appendChild(l)); if (extra) d.appendChild(extra);
+    stage.appendChild(d); void d.offsetWidth; d.classList.add('in');
+    return d;
+  }
+  function hide(d, fast) {
+    if (!d || d.dataset.gone) return; d.dataset.gone = '1';
+    d.classList.remove('in'); d.classList.add('out'); if (fast) d.classList.add('fast');
+    setTimeout(() => d.remove(), fast ? 800 : 1500);
+  }
+
+  const timers = new Set();
+  const later = (fn, ms) => { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); };
+  const clearLater = () => { timers.forEach(clearTimeout); timers.clear(); };
+
+  /* ---------- Keep the screen awake during the minute, where the browser allows it ---------- */
+  let lock = null;
+  async function keepAwake() {
+    try {
+      if ('wakeLock' in navigator && !lock && !document.hidden) {
+        lock = await navigator.wakeLock.request('screen');
+        lock.addEventListener('release', () => { lock = null; });
+      }
+    } catch (e) { lock = null; }
+  }
+  function releaseAwake() { try { if (lock) lock.release(); } catch (e) {} lock = null; }
+
+  /* ---------- State ---------- */
+  let state = 'intro', current = null, live = [], nextIdx = 0;
+  let runStart = 0, readyAt = 0, lastActivity = 0, attempts = 0;
+  let pShown = 0, lastT = performance.now(), lastSec = -1;
+
+  function showIntro(first, now) {
+    state = 'intro';
+    if (first) {
+      current = block([
+        line('60 Վայրկյան', 'title', .3),
+        line('Մեկ րոպե տուր այս էջին և ոչինչ մի՛ արա։', 'main', 1.3),
+        line('Մի՛ շարժվիր, մի՛ դիպչիր էկրանին, մի՛ հեռացիր էջից։', 'sub', 2.6),
+        line(HINT_FIRST, 'sub hint', 3.8)
+      ]);
+      readyAt = now + 5800;
+    } else {
+      current = block([
+        line('Ուրեմն՝ եվս մեկ րոպե։', 'main', .3),
+        line(HINT_FIRST, 'sub hint', 1.3)
+      ]);
+      readyAt = now + 3300;
+    }
+    lastActivity = now;
+  }
+
+  function startRun(now) {
+    hide(current); current = null;
+    state = 'running'; runStart = now; nextIdx = 0; live = []; lastSec = -1;
+    root.style.setProperty('--still', '0');
+    body.classList.add('running');
+    keepAwake();
+  }
+
+  function interrupt(kind, now) {
+    attempts++; state = 'interrupted';
+    live.forEach(m => hide(m.el, true)); live = []; beatEls = [];
+    body.classList.remove('running', 'inhale');
+    const lines = [line(REASONS[kind] || REASONS.move, 'main', .35)];
+    if (attempts >= 3) lines.push(line(HARDER, 'sub', 1.3));
+    const hintAt = attempts >= 3 ? 2.4 : 1.3;
+    lines.push(line(HINT_AGAIN, 'sub hint', hintAt));
+    current = block(lines);
+    readyAt = now + (hintAt + 2) * 1000; lastActivity = now;
+    document.title = kind === 'left' ? 'Վերադարձիր' : TITLE;
+  }
+
+  function finish() {
+    state = 'end';
+    live.forEach(m => hide(m.el, true)); live = []; beatEls = [];
+    body.classList.remove('running', 'inhale'); body.classList.add('ended');
+    document.title = TITLE;
+    releaseAwake();
+    later(() => {
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'again'; btn.textContent = 'Եվս մեկ րոպե';
+      current = block([
+        line('Դու հենց նոր քո կյանքի մեկ րոպեն տվեցիր այս էջին։', 'main', 0),
+        line('Իսկ քանի՞ այդպիսի րոպե ունես դեռ։', 'main ask', 3.9)
+      ], btn);
+    }, 2800);
+  }
+
+  function restart() {
+    clearLater(); hide(current, true); current = null;
+    body.classList.remove('ended'); attempts = 0;
+    showIntro(false, performance.now());
+  }
+  stage.addEventListener('click', e => { if (e.target.closest('.again')) restart(); });
+
+  /* ---------- The loop ---------- */
+  function ease(target, dt) {
+    const tau = reduce ? 120 : 650;
+    pShown += (target - pShown) * (1 - Math.exp(-dt / tau));
+  }
+
+  function frame(now) {
+    const dt = Math.min(100, now - lastT); lastT = now;
+
+    if (state === 'intro' || state === 'interrupted') {
+      const since = now - Math.max(lastActivity, readyAt);
+      const still = now < readyAt ? 0 : Math.max(0, Math.min(1, since / STILL_MS));
+      root.style.setProperty('--still', still.toFixed(3));
+      ease(0, dt);                                    // the light rises again
+      if (now >= readyAt && since >= STILL_MS) startRun(now);
+
+    } else if (state === 'running') {
+      const el = now - runStart, s = el / 1000;
+      pShown = Math.min(1, el / RUN_MS);             // the light sets with the minute
+
+      const left = Math.max(0, Math.ceil((RUN_MS - el) / 1000));
+      if (left !== lastSec) { lastSec = left; document.title = `(${left}) ${TITLE}`; }
+
+      while (nextIdx < SCRIPT.length && s >= SCRIPT[nextIdx].t) {
+        const m = SCRIPT[nextIdx++];
+        const lines = [line(m.main, 'main', 0)];
+        if (m.sub) lines.push(line(m.sub, 'sub', 1.0));
+        live.push({ el: block(lines), hideAt: (m.t + m.d) * 1000 });
+        if (m.breath === 'in') body.classList.add('inhale');
+        if (m.breath === 'out') body.classList.remove('inhale');
+      }
+      live = live.filter(m => { if (el >= m.hideAt) { hide(m.el); return false; } return true; });
+
+      if (beatEls.length) {
+        const n = String(beats(now));
+        beatEls = beatEls.filter(b => b.isConnected);
+        beatEls.forEach(b => { if (b.textContent !== n) b.textContent = n; });
+      }
+
+      if (el >= RUN_MS) finish();
+
+    } else if (state === 'end') {
+      ease(1, dt);
+    }
+
+    apply(pShown);
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- Anything you do counts ---------- */
+  let anchor = null;
+  function activity(kind) {
+    const now = performance.now();
+    if (state === 'running') interrupt(kind, now);
+    else if (state === 'intro' || state === 'interrupted') lastActivity = now;
+  }
+  addEventListener('pointermove', e => {
+    if (e.pointerType && e.pointerType !== 'mouse') return;
+    if (!anchor) { anchor = { x: e.clientX, y: e.clientY }; return; }
+    const dx = e.clientX - anchor.x, dy = e.clientY - anchor.y, lim = state === 'running' ? 16 : 4;
+    if (dx * dx + dy * dy > lim * lim) { anchor = { x: e.clientX, y: e.clientY }; activity('move'); }
+  }, { passive: true });
+  addEventListener('pointerdown', e => activity(e.pointerType === 'mouse' ? 'click' : 'touch'), { passive: true });
+  addEventListener('touchstart', () => activity('touch'), { passive: true });
+  addEventListener('keydown', () => activity('key'));
+  addEventListener('wheel', () => activity('scroll'), { passive: true });
+  /* Losing focus without hiding the page means looking elsewhere; hiding it means leaving. */
+  addEventListener('blur', () => { setTimeout(() => activity(document.hidden ? 'left' : 'away'), 150); });
+  document.addEventListener('visibilitychange', () => {
+    const now = performance.now();
+    if (document.hidden) {
+      activity('left');
+    } else {
+      lastT = now;
+      if (state === 'interrupted') { readyAt = Math.max(readyAt, now + 2400); lastActivity = now; document.title = TITLE; }
+      if (state === 'running') keepAwake();
+    }
+  });
+
+  apply(0);
+  showIntro(true, performance.now());
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
